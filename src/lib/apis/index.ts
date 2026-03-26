@@ -454,7 +454,8 @@ export const executeToolServer = async (
 	url: string,
 	name: string,
 	params: Record<string, any>,
-	serverData: { openapi: any; info: any; specs: any }
+	serverData: { openapi: any; info: any; specs: any },
+	contextHeaders: Record<string, string> = {}
 ) => {
 	let error = null;
 
@@ -529,7 +530,8 @@ export const executeToolServer = async (
 		// Prepare headers and request options
 		const headers: Record<string, string> = {
 			'Content-Type': 'application/json',
-			...(token && { authorization: `Bearer ${token}` })
+			...(token && { authorization: `Bearer ${token}` }),
+			...contextHeaders
 		};
 
 		const requestOptions: RequestInit = {
