@@ -369,18 +369,24 @@
 		return { toolServer, toolServerData, token };
 	};
 
-	const executeTool = async (data, cb) => {
+	const executeTool = async (data, cb, context = {}) => {
 		const { toolServer, toolServerData, token } = resolveToolServer(data.server?.url);
 
 		console.log('executeTool', data, toolServer);
 
 		if (toolServer) {
+			const contextHeaders = {
+				...(context?.chat_id ? { 'X-OpenWebUI-Chat-Id': context.chat_id } : {}),
+				...(context?.message_id ? { 'X-OpenWebUI-Message-Id': context.message_id } : {})
+			};
+
 			const res = await executeToolServer(
 				token,
 				toolServer.url,
 				data?.name,
 				data?.params,
-				toolServerData
+				toolServerData,
+				contextHeaders
 			);
 
 			console.log('executeToolServer', res);
@@ -479,7 +485,10 @@
 				executePythonAsWorker(data.id, data.code, cb, data.files || []);
 			} else if (type === 'execute:tool') {
 				console.log('execute:tool', data);
-				executeTool(data, cb);
+				executeTool(data, cb, {
+					chat_id: event.chat_id,
+					message_id: event.message_id
+				});
 			} else if (type === 'request:chat:completion') {
 				console.log(data, $socket.id);
 				const { session_id, channel, form_data, model } = data;
